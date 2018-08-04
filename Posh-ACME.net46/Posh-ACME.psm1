@@ -1,15 +1,18 @@
 #Requires -Version 5.1
 
-# Before we do anything else, make sure we have a sufficient .NET version that can load
-# the .NET Standard 2.0 version of Bouncy Castle we're using. It's supposed to be compatible
-# with .NET 4.6.1, but only if the app is compiled to support it (which PowerShell is not).
-# So it only loads properly on .NET 4.7.1 or later which is also the minimum version we need
-# to fully support ECC based certs. Any version of .NET Core should already work.
+# Before we do anything else, make sure we have a sufficient .NET version
 if ($PSVersionTable.PSEdition -eq 'Desktop') {
     # https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed#to-check-for-a-minimum-required-net-framework-version-by-querying-the-registry-in-powershell-net-framework-45-and-later
     $netBuild = (Get-ItemProperty "HKLM:SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full").Release
-    if ($netBuild -lt 394254) {
-            throw "Insufficient .NET version found (build $netBuild). Please install .NET 4.6.1 or later."
+    if ($netBuild -ge 394254) { <# 4.6.1+ - all good #> }
+    else {
+        if     ($netBuild -ge 393295) { $netVer = '4.6' }
+        elseif ($netBuild -ge 379893) { $netVer = '4.5.2' }
+        elseif ($netBuild -ge 378675) { $netVer = '4.5.1' }
+        Write-Warning "**********************************************************************"
+        Write-Warning "Insufficient .NET version. Found .NET $netVer (build $netBuild)."
+        Write-Warning ".NET 4.6.1 or later is required to ensure proper functionality."
+        Write-Warning "**********************************************************************"
     }
 }
 
